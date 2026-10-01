@@ -17,7 +17,7 @@ const unidades: Unidade[] = [
 ]
 
 interface UnidadesScreenProps {
-  onSelect: () => void
+  onSelect: (unidade: string) => void
   onNavigate: (screen: string) => void
 }
 
@@ -33,7 +33,7 @@ export function UnidadesScreen({ onSelect, onNavigate }: UnidadesScreenProps) {
           {unidades.map((u) => (
             <button
               key={u.nome}
-              onClick={onSelect}
+              onClick={() => onSelect(u.nome)}
               className="bg-card rounded-2xl p-5 shadow-sm border border-border text-left transition-all hover:shadow-md active:scale-[0.98] w-full"
             >
               <div className="flex items-start justify-between mb-3">

@@ -1,0 +1,16 @@
+# Dependencies
+**/node_modules/
+
+# Next.js and deployment output
+**/.next/
+**/out/
+**/.vercel/
+
+# Local environment files and secrets
+**/.env
+**/.env.*
+!**/.env.example
+
+# TypeScript build artifacts
+**/*.tsbuildinfo
+**/next-env.d.ts

@@ -1,7 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import type { Session } from "@supabase/supabase-js"
 import { BottomNav } from "@/components/bottom-nav"
+import { AuthScreen } from "@/components/auth-screen"
 import { HomeScreen } from "@/components/screens/home-screen"
 import { NovoAtendimentoScreen } from "@/components/screens/novo-atendimento-screen"
 import { EspecialidadeScreen } from "@/components/screens/especialidade-screen"
@@ -14,6 +16,7 @@ import { AcompanharScreen } from "@/components/screens/acompanhar-screen"
 import { SaudeScreen } from "@/components/screens/saude-screen"
 import { MaisScreen } from "@/components/screens/mais-screen"
 import { PerfilScreen } from "@/components/screens/perfil-screen"
+import { supabaseClient } from "@/lib/supabase-client"
 
 // Interface atualizada conforme os campos do seu formulário
 interface DadosPaciente {
@@ -48,6 +51,41 @@ const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbz8WZqtX1KFOZn
 export default function App() {
   const [tela, setTela] = useState("home")
   const [dados, setDados] = useState<DadosPaciente>(initialDados)
+  const [session, setSession] = useState<Session | null>(null)
+  const [authReady, setAuthReady] = useState(false)
+
+  useEffect(() => {
+    if (!supabaseClient) {
+      setAuthReady(true)
+      return
+    }
+
+    let isMounted = true
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_, nextSession) => {
+      setSession(nextSession)
+      setAuthReady(true)
+    })
+
+    void supabaseClient.auth.getSession().then(({ data }) => {
+      if (isMounted) {
+        setSession(data.session)
+        setAuthReady(true)
+      }
+    })
+
+    return () => {
+      isMounted = false
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  const signOut = async () => {
+    if (!supabaseClient) return
+    const { error } = await supabaseClient.auth.signOut()
+    if (error) console.error("Erro ao sair da conta:", error)
+    setDados(initialDados)
+    setTela("home")
+  }
 
   const salvarDadosNoGoogle = async (dadosParaSalvar: DadosPaciente) => {
     const payload = {
@@ -111,15 +149,7 @@ export default function App() {
       case "horarios":
         return <HorariosScreen onNavigate={navigate} />
       case "urgencia":
-        return (
-          <UrgenciaScreen
-            onSelect={(urg) => {
-              updateDados({ urgencia: urg })
-              navigate("unidades")
-            }}
-            onNavigate={navigate}
-          />
-        )
+        return <UrgenciaScreen onNavigate={navigate} />
       case "unidades":
         return (
           <UnidadesScreen
@@ -148,12 +178,24 @@ export default function App() {
       case "saude":
         return <SaudeScreen onNavigate={navigate} />
       case "mais":
-        return <MaisScreen onNavigate={navigate} />
+        return <MaisScreen onNavigate={navigate} onSignOut={signOut} />
       case "perfil":
         return <PerfilScreen onNavigate={navigate} />
       default:
         return <HomeScreen onNavigate={navigate} />
     }
+  }
+
+  if (!authReady) {
+    return (
+      <main className="min-h-dvh flex items-center justify-center bg-background text-sm text-muted-foreground">
+        Carregando acesso...
+      </main>
+    )
+  }
+
+  if (!session) {
+    return <AuthScreen client={supabaseClient} />
   }
 
   return (
