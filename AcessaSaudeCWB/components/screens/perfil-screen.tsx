@@ -9,9 +9,9 @@ interface PerfilScreenProps {
 
 export function PerfilScreen({ onNavigate }: PerfilScreenProps) {
   return (
-    <div className="bg-background h-full flex flex-col pb-20">
+    <div className="h-full flex flex-col pb-20 bg-[linear-gradient(145deg,#1684b6_0%,#0aa9b2_52%,#08a779_100%)]">
       <PageHeader title="Perfil" onBack={() => onNavigate("home")} />
-      <main className="flex-1 overflow-y-auto p-5">
+      <main className="flex-1 overflow-y-auto bg-transparent p-5">
         {/* Avatar & Name */}
         <div className="bg-card rounded-2xl p-5 shadow-sm border border-border mb-4">
           <div className="flex items-center gap-4">

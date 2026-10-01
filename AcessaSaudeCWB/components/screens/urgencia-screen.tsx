@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/page-header"
 import { AlertTriangle, Send, Bot, UserIcon } from "lucide-react"
 
 type UrgenciaStep = "form" | "chat" | "confirmed"
+type ChatStage = "description" | "assistance" | "special-care" | "complete"
 
 interface ChatMessage {
   sender: "bot" | "user"
@@ -14,7 +15,7 @@ interface ChatMessage {
 const INITIAL_MESSAGES: ChatMessage[] = [
   {
     sender: "bot",
-    text: "Ola! Sou o assistente de urgencia da AcessaSaudeCWB. Por favor, descreva brevemente a emergencia para que possamos priorizar seu atendimento.",
+    text: "Olá! Sou o assistente de urgência da AcessaSaudeCWB. Descreva brevemente o que está acontecendo.",
   },
 ]
 
@@ -28,27 +29,62 @@ export function UrgenciaScreen({ onNavigate }: UrgenciaScreenProps) {
   const [telefoneUrgencia, setTelefoneUrgencia] = useState("")
   const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES)
   const [currentMessage, setCurrentMessage] = useState("")
+  const [chatStage, setChatStage] = useState<ChatStage>("description")
+  const [replyPending, setReplyPending] = useState(false)
+  const [needsAmbulance, setNeedsAmbulance] = useState(false)
+  const [specialCare, setSpecialCare] = useState("")
 
   const handleRegistrar = () => {
     setStep("chat")
   }
 
   const handleSendMessage = () => {
-    if (!currentMessage.trim()) return
+    const messageText = currentMessage.trim()
+    if (!messageText || replyPending || chatStage === "assistance") return
 
-    const userMsg: ChatMessage = { sender: "user", text: currentMessage.trim() }
-    setMessages((prev) => [...prev, userMsg])
+    setMessages((prev) => [...prev, { sender: "user", text: messageText }])
     setCurrentMessage("")
+    setReplyPending(true)
 
-    // Simulated bot response
     setTimeout(() => {
-      const botResponse: ChatMessage = {
-        sender: "bot",
-        text: "Obrigado pela informacao. Sua urgencia foi classificada e a equipe foi notificada. Um profissional de saude entrara em contato em breve.",
+      if (chatStage === "description") {
+        setMessages((prev) => [...prev, {
+          sender: "bot",
+          text: "Você precisa de ambulância ou de algum cuidado especial ao chegar à unidade?",
+        }])
+        setChatStage("assistance")
+      } else {
+        setSpecialCare(messageText)
+        setMessages((prev) => [...prev, {
+          sender: "bot",
+          text: "Anotei a informação no resumo deste aplicativo.",
+        }])
+        setChatStage("complete")
+        setStep("confirmed")
       }
-      setMessages((prev) => [...prev, botResponse])
-      setTimeout(() => setStep("confirmed"), 1500)
-    }, 1200)
+      setReplyPending(false)
+    }, 700)
+  }
+
+  const chooseAmbulance = () => {
+    setNeedsAmbulance(true)
+    setMessages((prev) => [...prev, { sender: "user", text: "Preciso de ambulância." }])
+    setChatStage("complete")
+    setStep("confirmed")
+  }
+
+  const chooseSpecialCare = () => {
+    setMessages((prev) => [...prev,
+      { sender: "user", text: "Preciso de cuidados especiais." },
+      { sender: "bot", text: "Quais cuidados especiais você precisa ao chegar à unidade?" },
+    ])
+    setChatStage("special-care")
+  }
+
+  const chooseNoAdditionalCare = () => {
+    setMessages((prev) => [...prev, { sender: "user", text: "Não preciso de ambulância ou cuidados especiais." }])
+    setChatStage("complete")
+    setStep("confirmed")
   }
 
   // Confirmed state
@@ -60,19 +96,30 @@ export function UrgenciaScreen({ onNavigate }: UrgenciaScreenProps) {
             <AlertTriangle className="w-12 h-12 text-destructive" />
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-2">Urgencia Registrada</h1>
-          <p className="text-muted-foreground text-sm mb-6">
-            A equipe medica foi notificada e entrara em contato em instantes.
-          </p>
-          <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-4 mb-6">
-            <p className="text-sm font-semibold text-destructive mb-1">Equipe Notificada</p>
-            <p className="text-sm text-muted-foreground">
-              Um tecnico de saude ligara em breve para {nomeUrgencia || "o paciente"}.
+            <p className="text-muted-foreground text-sm mb-4">
+              Seu relato foi registrado neste aplicativo. Nenhuma equipe foi notificada automaticamente.
+            </p>
+          <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-4 mb-6 text-left">
+            {needsAmbulance ? (
+              <p className="text-sm font-semibold text-destructive mb-2">
+                Este aplicativo não aciona ambulâncias. Para solicitar socorro, ligue 192 (SAMU).
+              </p>
+            ) : specialCare ? (
+              <p className="text-sm text-foreground mb-2">
+                <span className="font-semibold">Cuidado especial informado:</span> {specialCare}
+              </p>
+            ) : null}
+            <p className="text-sm font-semibold text-destructive">
+              Se houver risco imediato, ligue 192 (SAMU) ou procure o serviço de emergência mais próximo.
             </p>
           </div>
           <button
             onClick={() => {
               setStep("form")
               setMessages(INITIAL_MESSAGES)
+              setChatStage("description")
+              setNeedsAmbulance(false)
+              setSpecialCare("")
               setNomeUrgencia("")
               setTelefoneUrgencia("")
               onNavigate("home")
@@ -118,6 +165,31 @@ export function UrgenciaScreen({ onNavigate }: UrgenciaScreenProps) {
               )}
             </div>
           ))}
+          {chatStage === "assistance" && (
+            <div className="ml-10 grid gap-2">
+              <button
+                type="button"
+                onClick={chooseAmbulance}
+                className="rounded-xl border border-destructive/30 bg-card px-4 py-3 text-left text-sm font-semibold text-destructive hover:bg-destructive/5"
+              >
+                Preciso de ambulância
+              </button>
+              <button
+                type="button"
+                onClick={chooseSpecialCare}
+                className="rounded-xl border border-border bg-card px-4 py-3 text-left text-sm font-semibold text-foreground hover:bg-secondary"
+              >
+                Preciso de cuidados especiais
+              </button>
+              <button
+                type="button"
+                onClick={chooseNoAdditionalCare}
+                className="rounded-xl border border-border bg-card px-4 py-3 text-left text-sm font-semibold text-foreground hover:bg-secondary"
+              >
+                Não preciso
+              </button>
+            </div>
+          )}
         </div>
         <div className="px-5 pb-5 pt-2 border-t border-border bg-background">
           <div className="flex items-center gap-2">
@@ -126,13 +198,14 @@ export function UrgenciaScreen({ onNavigate }: UrgenciaScreenProps) {
               value={currentMessage}
               onChange={(e) => setCurrentMessage(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-              placeholder="Descreva a emergencia..."
+              disabled={replyPending || chatStage === "assistance"}
+              placeholder={chatStage === "special-care" ? "Quais cuidados especiais?" : "Descreva a emergência..."}
               className="flex-1 px-4 py-3.5 bg-input border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-base"
               aria-label="Mensagem sobre a emergencia"
             />
             <button
               onClick={handleSendMessage}
-              disabled={!currentMessage.trim()}
+              disabled={!currentMessage.trim() || replyPending || chatStage === "assistance"}
               className="w-12 h-12 bg-destructive text-destructive-foreground rounded-xl flex items-center justify-center transition-all hover:bg-destructive/90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
               aria-label="Enviar mensagem"
             >
@@ -156,6 +229,9 @@ export function UrgenciaScreen({ onNavigate }: UrgenciaScreenProps) {
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed">
             Preencha os dados abaixo para registro imediato. Apos clicar em Registrar, voce sera direcionado ao assistente virtual.
+          </p>
+          <p className="text-sm font-semibold text-destructive mt-3">
+            Este formulário não solicita ambulância. Em caso de emergência, ligue 192 (SAMU).
           </p>
         </div>
         <div className="bg-card rounded-2xl p-5 shadow-sm border border-border">

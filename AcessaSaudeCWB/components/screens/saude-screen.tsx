@@ -70,7 +70,7 @@ export function SaudeScreen({ onNavigate }: SaudeScreenProps) {
   // Detail view with exams
   if (selected) {
     return (
-      <div className="bg-background h-full flex flex-col pb-20">
+      <div className="h-full flex flex-col pb-20 bg-[linear-gradient(145deg,#1684b6_0%,#0aa9b2_52%,#08a779_100%)]">
         <header className="bg-primary text-primary-foreground px-4 py-4 flex items-center gap-3 shadow-sm">
           <button
             onClick={() => setSelectedId(null)}
@@ -81,7 +81,7 @@ export function SaudeScreen({ onNavigate }: SaudeScreenProps) {
           </button>
           <h1 className="text-lg font-bold tracking-tight">Exames Necessarios</h1>
         </header>
-        <main className="flex-1 overflow-y-auto p-5">
+        <main className="flex-1 overflow-y-auto bg-transparent p-5">
           {/* Appointment summary */}
           <div className="bg-card rounded-2xl p-5 shadow-sm border border-border mb-4">
             <div className="flex items-center gap-3 mb-3">
@@ -100,7 +100,7 @@ export function SaudeScreen({ onNavigate }: SaudeScreenProps) {
           </div>
 
           {/* Exams List */}
-          <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+          <p className="text-sm font-semibold text-white uppercase tracking-wider mb-3">
             Exames solicitados
           </p>
           {selected.exames.length === 0 ? (
@@ -115,11 +115,7 @@ export function SaudeScreen({ onNavigate }: SaudeScreenProps) {
               {selected.exames.map((exame, i) => (
                 <div
                   key={i}
-                  className={`flex items-center gap-3 p-4 rounded-xl border ${
-                    exame.status === "realizado"
-                      ? "bg-success/5 border-success/20"
-                      : "bg-warning/5 border-warning/20"
-                  }`}
+                  className="flex items-center gap-3 p-4 rounded-xl border border-border bg-white shadow-sm"
                 >
                   {exame.status === "realizado" ? (
                     <CheckCircle2 className="w-5 h-5 text-success shrink-0" />
@@ -145,12 +141,14 @@ export function SaudeScreen({ onNavigate }: SaudeScreenProps) {
 
   // List view
   return (
-    <div className="bg-background h-full flex flex-col pb-20">
+    <div className="h-full flex flex-col pb-20 bg-[linear-gradient(145deg,#1684b6_0%,#0aa9b2_52%,#08a779_100%)]">
       <PageHeader title="Saude" onBack={() => onNavigate("home")} />
-      <main className="flex-1 overflow-y-auto p-5">
-        <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-          Ultimas Consultas
-        </p>
+      <main className="flex-1 overflow-y-auto bg-transparent p-5">
+        <div className="mb-4 flex items-center gap-3">
+          <span aria-hidden="true" className="flex-1 border-t border-dashed border-white/80" />
+          <h2 className="text-base font-bold text-white text-center">Histórico de consultas</h2>
+          <span aria-hidden="true" className="flex-1 border-t border-dashed border-white/80" />
+        </div>
         <div className="flex flex-col gap-3">
           {pastAppointments.map((appt) => (
             <button

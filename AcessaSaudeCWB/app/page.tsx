@@ -6,6 +6,7 @@ import { HomeScreen } from "@/components/screens/home-screen"
 import { NovoAtendimentoScreen } from "@/components/screens/novo-atendimento-screen"
 import { EspecialidadeScreen } from "@/components/screens/especialidade-screen"
 import { SintomasScreen } from "@/components/screens/sintomas-screen"
+import { HorariosScreen } from "@/components/screens/horarios-screen"
 import { UrgenciaScreen } from "@/components/screens/urgencia-screen"
 import { UnidadesScreen } from "@/components/screens/unidades-screen"
 import { ConfirmacaoScreen } from "@/components/screens/confirmacao-screen"
@@ -91,24 +92,24 @@ export default function App() {
       case "especialidade":
         return (
           <EspecialidadeScreen
-            onSelect={(esp) => {
-              updateDados({ especialidade: esp })
-              navigate("sintomas")
-            }}
+            onSelect={(esp) => updateDados({ especialidade: esp })}
             onNavigate={navigate}
           />
         )
       case "sintomas":
         return (
           <SintomasScreen
-            sintomas={dados.sintomas.join(", ")}
+            sintomas={dados.sintomas.join("\n")}
             onUpdate={(sintomasText) => {
-              const sintomasArray = sintomasText.split(", ").filter(Boolean)
+              const sintomasArray = sintomasText.split("\n").filter(Boolean)
               updateDados({ sintomas: sintomasArray })
             }}
             onNavigate={navigate}
+            teleatendimento={dados.especialidade === "Teleatendimento"}
           />
         )
+      case "horarios":
+        return <HorariosScreen onNavigate={navigate} />
       case "urgencia":
         return (
           <UrgenciaScreen
