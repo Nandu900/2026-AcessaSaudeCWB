@@ -8,7 +8,7 @@ const variantClasses: Record<HeaderVariant, string> = {
   primary: "bg-primary text-primary-foreground",
   success: "bg-success text-success-foreground",
   destructive: "bg-destructive text-destructive-foreground",
-  info: "bg-[oklch(0.52_0.12_240)] text-[oklch(0.99_0_0)]",
+  info: "bg-primary text-primary-foreground",
 }
 
 interface PageHeaderProps {

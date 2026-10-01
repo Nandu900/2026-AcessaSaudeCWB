@@ -49,7 +49,7 @@ export function AcompanharScreen({ onNavigate }: AcompanharScreenProps) {
   if (selected) {
     return (
       <div className="bg-background h-full flex flex-col pb-20">
-        <header className="bg-[oklch(0.52_0.12_240)] text-[oklch(0.99_0_0)] px-4 py-4 flex items-center gap-3 shadow-sm">
+        <header className="bg-primary text-primary-foreground px-4 py-4 flex items-center gap-3 shadow-sm">
           <button
             onClick={() => {
               setSelectedId(null)

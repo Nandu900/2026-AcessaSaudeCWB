@@ -1,6 +1,7 @@
 "use client"
 
-import { FileText, AlertTriangle, Clock, Bell, Shield } from "lucide-react"
+import { FileText, AlertTriangle, Clock, Bell } from "lucide-react"
+import Image from "next/image"
 
 interface HomeScreenProps {
   onNavigate: (screen: string) => void
@@ -8,46 +9,56 @@ interface HomeScreenProps {
 
 export function HomeScreen({ onNavigate }: HomeScreenProps) {
   return (
-    <div className="flex flex-col h-full bg-primary">
+    <div className="flex flex-col h-full bg-[linear-gradient(145deg,#1684b6_0%,#0aa9b2_52%,#08a779_100%)]">
       {/* Top Bar */}
-      <header className="px-5 pt-5 pb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 bg-card rounded-xl flex items-center justify-center shadow-md">
-            <Shield className="w-6 h-6 text-primary" />
+      <header className="px-5 pt-5 pb-4">
+        <div className="flex items-center justify-between gap-3 rounded-2xl bg-white p-3 shadow-sm">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="relative w-[68px] h-[68px] overflow-hidden rounded-full bg-card shadow-sm shrink-0">
+              <Image
+                src="/acessasaudecwb_logo.png"
+                alt="Símbolo AcessaSaudeCWB"
+                width={168}
+                height={168}
+                className="absolute left-1/2 top-[-42px] max-w-none -translate-x-1/2"
+              />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-primary font-bold text-lg leading-tight">
+                AcessaSaudeCWB
+              </h1>
+              <p className="text-accent text-xs font-semibold">
+                Triagem Digital
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-primary-foreground font-bold text-base tracking-tight">
-              AcessaSaudeCWB
-            </h1>
-            <p className="text-primary-foreground/60 text-xs font-medium">
-              Triagem Digital
-            </p>
-          </div>
+          <button
+            className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors shrink-0"
+            aria-label="Notificacoes"
+          >
+            <Bell className="w-5 h-5 text-primary" />
+          </button>
         </div>
-        <button
-          className="w-10 h-10 rounded-xl bg-primary-foreground/10 flex items-center justify-center hover:bg-primary-foreground/20 transition-colors"
-          aria-label="Notificacoes"
-        >
-          <Bell className="w-5 h-5 text-primary-foreground" />
-        </button>
       </header>
 
       {/* Welcome Banner */}
-      <div className="px-5 pb-6">
-        <h2 className="text-primary-foreground text-xl font-bold mb-1.5 text-balance">
+      <div className="mx-5 mb-5 rounded-2xl bg-white px-5 py-4 shadow-sm">
+        <h2 className="text-primary text-xl font-bold mb-1.5 text-balance">
           Bem-vindo(a) ao seu atendimento digital
         </h2>
-        <p className="text-primary-foreground/70 text-sm leading-relaxed">
+        <p className="text-emerald-800 text-sm leading-relaxed">
           Menos burocracia, mais agilidade e atendimento prioritario.
         </p>
       </div>
 
       {/* Content Area */}
-      <main className="flex-1 bg-background rounded-t-3xl px-5 pt-6 pb-24 overflow-y-auto">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-4">
-          Servicos
-        </p>
-        <div className="flex flex-col gap-3">
+      <main className="flex-1 min-h-0 bg-transparent rounded-t-3xl px-5 pt-6 pb-24 overflow-y-auto">
+        <div className="mb-4 flex items-center gap-3">
+          <span aria-hidden="true" className="flex-1 border-t border-dashed border-white/80" />
+          <h2 className="text-lg font-bold text-white">Serviços</h2>
+          <span aria-hidden="true" className="flex-1 border-t border-dashed border-white/80" />
+        </div>
+        <div className="flex flex-col gap-4">
           <ActionCard
             icon={FileText}
             title="Novo Atendimento"
@@ -57,7 +68,7 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
           />
           <ActionCard
             icon={AlertTriangle}
-            title="Urgencia"
+            title="Urgência"
             subtitle="Atendimento imediato"
             onClick={() => onNavigate("urgencia")}
             variant="destructive"
@@ -93,16 +104,16 @@ function ActionCard({ icon: Icon, title, subtitle, onClick, variant }: ActionCar
   return (
     <button
       onClick={onClick}
-      className={`w-full rounded-2xl p-5 shadow-sm transition-all active:scale-[0.98] ${variantStyles[variant]}`}
+      className={`w-full min-h-[140px] rounded-2xl border-2 border-white p-4 shadow-md transition-all active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${variantStyles[variant]}`}
       aria-label={`${title}: ${subtitle}`}
     >
-      <div className="flex items-center gap-4">
-        <div className="bg-foreground/10 p-3 rounded-xl shrink-0">
-          <Icon className="w-6 h-6" />
+      <div className="flex items-center justify-between gap-4 text-left">
+        <div className="min-w-0 flex-1 pl-2">
+          <h3 className="font-bold text-xl leading-tight">{title}</h3>
+          <p className="mt-2 text-sm font-medium leading-relaxed">{subtitle}</p>
         </div>
-        <div className="text-left">
-          <h3 className="font-bold text-base">{title}</h3>
-          <p className="text-sm opacity-80 font-medium">{subtitle}</p>
+        <div className="mr-2 w-14 h-14 rounded-full bg-white/15 flex items-center justify-center shrink-0">
+          <Icon className="w-8 h-8" />
         </div>
       </div>
     </button>
