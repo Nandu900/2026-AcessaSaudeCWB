@@ -12,14 +12,19 @@ const horariosPorPeriodo = {
 type Periodo = keyof typeof horariosPorPeriodo
 
 interface HorariosScreenProps {
+  nome: string
+  email: string
+  onRegister: (consulta: { data: string; horario: string }) => Promise<void>
   onNavigate: (screen: string) => void
 }
 
-export function HorariosScreen({ onNavigate }: HorariosScreenProps) {
+export function HorariosScreen({ nome, email, onRegister, onNavigate }: HorariosScreenProps) {
   const [data, setData] = useState("")
   const [periodo, setPeriodo] = useState<Periodo | "">("")
   const [horario, setHorario] = useState("")
   const [confirmado, setConfirmado] = useState(false)
+  const [salvando, setSalvando] = useState(false)
+  const [erro, setErro] = useState("")
 
   const dataFormatada = data
     ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(new Date(`${data}T12:00:00`))
@@ -32,10 +37,10 @@ export function HorariosScreen({ onNavigate }: HorariosScreenProps) {
         {confirmado ? (
           <section className="bg-card rounded-2xl p-6 shadow-sm border border-border text-center">
             <CheckCircle2 className="w-10 h-10 text-success mx-auto mb-3" />
-            <h2 className="text-lg font-bold text-foreground mb-2">Horário selecionado</h2>
+            <h2 className="text-lg font-bold text-foreground mb-2">Solicitação registrada</h2>
             <p className="text-sm font-semibold text-foreground">{dataFormatada} às {horario}</p>
             <p className="text-sm text-muted-foreground mt-4">
-              A agenda ainda não está conectada. Este horário é demonstrativo e não foi reservado.
+              A solicitação foi registrada para {nome} ({email}). O horário ainda não foi confirmado pela unidade.
             </p>
             <button
               onClick={() => onNavigate("home")}
@@ -104,11 +109,23 @@ export function HorariosScreen({ onNavigate }: HorariosScreenProps) {
             <button
               type="button"
               disabled={!data || !horario}
-              onClick={() => setConfirmado(true)}
+              onClick={async () => {
+                setErro("")
+                setSalvando(true)
+                try {
+                  await onRegister({ data, horario })
+                  setConfirmado(true)
+                } catch (error) {
+                  setErro(error instanceof Error ? error.message : "Não foi possível registrar o horário.")
+                } finally {
+                  setSalvando(false)
+                }
+              }}
               className="w-full bg-success text-success-foreground font-bold py-4 rounded-xl mt-4 transition-all hover:bg-success/90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Selecionar horário
+              {salvando ? "Registrando..." : "Solicitar horário"}
             </button>
+            {erro && <p role="alert" className="mt-3 rounded-xl border border-destructive/20 bg-white p-3 text-sm text-destructive">{erro}</p>}
           </>
         )}
       </main>

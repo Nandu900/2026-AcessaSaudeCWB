@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { BottomNav } from "@/components/bottom-nav"
 import { HomeScreen } from "@/components/screens/home-screen"
 import { NovoAtendimentoScreen } from "@/components/screens/novo-atendimento-screen"
@@ -42,35 +42,62 @@ const initialDados: DadosPaciente = {
 
 const SCREENS_WITH_NAV = new Set(["home", "acompanhar", "saude", "mais"])
 
-// URL do seu Google Apps Script configurado anteriormente
-const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbz8WZqtX1KFOZnxOVzj4jNXg1X1zp2hiK7xKtqOXS9dTsf5Pm1TiGQwEndJ6HyFIvVZGw/exec';
+async function enviarParaPlanilhas(payload: Record<string, unknown>) {
+  const response = await fetch("/api/planilhas", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  })
+  const result = await response.json()
+  if (!response.ok || !result.ok) {
+    throw new Error(result.error || "Não foi possível salvar na planilha.")
+  }
+}
+const PROFILE_SESSION_KEY = "acessa-saude-profile"
 
 export default function App() {
   const [tela, setTela] = useState("home")
   const [dados, setDados] = useState<DadosPaciente>(initialDados)
+  const [profileReady, setProfileReady] = useState(false)
 
-  const salvarDadosNoGoogle = async (dadosParaSalvar: DadosPaciente) => {
-    const payload = {
-      timestamp: new Date().toLocaleString('pt-BR'),
-      ...dadosParaSalvar,
-      sintomas: dadosParaSalvar.sintomas.join(', ')
-    };
-
+  useEffect(() => {
     try {
-      await fetch(GOOGLE_SHEET_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      console.log("Dados enviados com sucesso!");
-    } catch (e) {
-      console.error("Erro ao enviar para o Sheets:", e);
+      const savedProfile = window.sessionStorage.getItem(PROFILE_SESSION_KEY)
+      if (savedProfile) {
+        const profile = JSON.parse(savedProfile) as Pick<DadosPaciente, "nome" | "email" | "telefone">
+        setDados((current) => ({
+          ...current,
+          nome: profile.nome ?? "",
+          email: profile.email ?? "",
+          telefone: profile.telefone ?? "",
+        }))
+      }
+    } catch {
+      window.sessionStorage.removeItem(PROFILE_SESSION_KEY)
     }
-  };
+    setProfileReady(true)
+  }, [])
+
+  useEffect(() => {
+    if (!profileReady) return
+    try {
+      window.sessionStorage.setItem(PROFILE_SESSION_KEY, JSON.stringify({
+        nome: dados.nome,
+        email: dados.email,
+        telefone: dados.telefone,
+      }))
+    } catch (error) {
+      console.error("Não foi possível salvar o perfil nesta sessão:", error)
+    }
+  }, [dados.nome, dados.email, dados.telefone, profileReady])
 
   const updateDados = (partial: Partial<DadosPaciente>) => {
     setDados((prev) => ({ ...prev, ...partial }))
+  }
+
+  const trocarPessoa = () => {
+    window.sessionStorage.removeItem(PROFILE_SESSION_KEY)
+    setDados(initialDados)
   }
 
   const navigate = (screen: string) => {
@@ -109,16 +136,48 @@ export default function App() {
           />
         )
       case "horarios":
-        return <HorariosScreen onNavigate={navigate} />
+        return (
+          <HorariosScreen
+            nome={dados.nome}
+            email={dados.email}
+            onRegister={({ data, horario }) => enviarParaPlanilhas({
+              action: "appointment",
+              nome: dados.nome,
+              email: dados.email,
+              especialidade: dados.especialidade,
+              unidade: "Teleatendimento",
+              dataConsulta: data,
+              horario,
+              status: "Solicitado",
+            })}
+            onNavigate={navigate}
+          />
+        )
       case "urgencia":
-        return <UrgenciaScreen onNavigate={navigate} />
+        return (
+          <UrgenciaScreen
+            nome={dados.nome}
+            email={dados.email}
+            telefone={dados.telefone}
+            onRegister={(triagem) => enviarParaPlanilhas({ action: "triage", ...triagem })}
+            onNavigate={navigate}
+          />
+        )
       case "unidades":
         return (
           <UnidadesScreen
-            onSelect={(unidade) => {
-              const finalData = { ...dados, unidade };
+            onSelect={async (unidade) => {
+              await enviarParaPlanilhas({
+                action: "appointment",
+                nome: dados.nome,
+                email: dados.email,
+                especialidade: dados.especialidade,
+                unidade,
+                dataConsulta: "",
+                horario: "",
+                status: "Solicitado",
+              })
               updateDados({ unidade })
-              salvarDadosNoGoogle(finalData);
               navigate("confirmacao")
             }}
             onNavigate={navigate}
@@ -129,23 +188,54 @@ export default function App() {
           <ConfirmacaoScreen
             nome={dados.nome}
             especialidade={dados.especialidade}
+            unidade={dados.unidade}
             onNavigate={(screen) => {
-              if (screen === "home") setDados(initialDados)
+              if (screen === "home") {
+                setDados((current) => ({
+                  ...initialDados,
+                  nome: current.nome,
+                  email: current.email,
+                }))
+              }
               navigate(screen)
             }}
           />
         )
       case "acompanhar":
-        return <AcompanharScreen onNavigate={navigate} />
+        return <AcompanharScreen email={dados.email} onNavigate={navigate} />
       case "saude":
         return <SaudeScreen onNavigate={navigate} />
       case "mais":
         return <MaisScreen onNavigate={navigate} />
       case "perfil":
-        return <PerfilScreen onNavigate={navigate} />
+        return (
+          <PerfilScreen
+            nome={dados.nome}
+            email={dados.email}
+            telefone={dados.telefone}
+            onUpdate={updateDados}
+            onSave={() => enviarParaPlanilhas({
+              action: "access",
+              nome: dados.nome,
+              email: dados.email,
+              usuarioId: dados.telefone,
+              evento: "Perfil informado",
+            })}
+            onClear={trocarPessoa}
+            onNavigate={navigate}
+          />
+        )
       default:
         return <HomeScreen onNavigate={navigate} />
     }
+  }
+
+  if (!profileReady) {
+    return (
+      <main className="min-h-dvh flex items-center justify-center bg-background text-sm text-muted-foreground">
+        Carregando...
+      </main>
+    )
   }
 
   return (

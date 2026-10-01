@@ -5,10 +5,11 @@ import { CheckCircle2 } from "lucide-react"
 interface ConfirmacaoScreenProps {
   nome: string
   especialidade: string
+  unidade: string
   onNavigate: (screen: string) => void
 }
 
-export function ConfirmacaoScreen({ nome, especialidade, onNavigate }: ConfirmacaoScreenProps) {
+export function ConfirmacaoScreen({ nome, especialidade, unidade, onNavigate }: ConfirmacaoScreenProps) {
   return (
     <div className="bg-background h-full flex flex-col p-5 pb-20">
       <main className="flex-1 min-h-0 flex items-center justify-center">
@@ -40,7 +41,7 @@ export function ConfirmacaoScreen({ nome, especialidade, onNavigate }: Confirmac
               <div className="h-px bg-border" />
               <div className="flex justify-between">
                 <span className="text-muted-foreground font-medium">Unidade</span>
-                <span className="text-foreground font-semibold">UBS Boqueirao</span>
+                <span className="text-foreground font-semibold">{unidade || "---"}</span>
               </div>
             </div>
           </div>

@@ -12,6 +12,16 @@ interface ChatMessage {
   text: string
 }
 
+interface TriagePayload {
+  nome: string
+  email: string
+  sintomas: string
+  observacoes: string
+  ambulancia: string
+  cuidadosEspeciais: string
+  unidade: string
+}
+
 const INITIAL_MESSAGES: ChatMessage[] = [
   {
     sender: "bot",
@@ -20,19 +30,52 @@ const INITIAL_MESSAGES: ChatMessage[] = [
 ]
 
 interface UrgenciaScreenProps {
+  nome: string
+  email: string
+  telefone: string
+  onRegister: (triagem: TriagePayload) => Promise<void>
   onNavigate: (screen: string) => void
 }
 
-export function UrgenciaScreen({ onNavigate }: UrgenciaScreenProps) {
+export function UrgenciaScreen({ nome, email, telefone, onRegister, onNavigate }: UrgenciaScreenProps) {
   const [step, setStep] = useState<UrgenciaStep>("form")
-  const [nomeUrgencia, setNomeUrgencia] = useState("")
-  const [telefoneUrgencia, setTelefoneUrgencia] = useState("")
+  const [nomeUrgencia, setNomeUrgencia] = useState(nome)
+  const [emailUrgencia, setEmailUrgencia] = useState(email)
+  const [telefoneUrgencia, setTelefoneUrgencia] = useState(telefone)
   const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES)
   const [currentMessage, setCurrentMessage] = useState("")
+  const [descricao, setDescricao] = useState("")
   const [chatStage, setChatStage] = useState<ChatStage>("description")
   const [replyPending, setReplyPending] = useState(false)
+  const [registering, setRegistering] = useState(false)
+  const [registrationError, setRegistrationError] = useState("")
+  const [pendingTriage, setPendingTriage] = useState<TriagePayload | null>(null)
   const [needsAmbulance, setNeedsAmbulance] = useState(false)
   const [specialCare, setSpecialCare] = useState("")
+
+  const registrarTriagem = async (ambulancia: boolean, cuidadosEspeciais = "") => {
+    const triagem: TriagePayload = {
+      nome: nomeUrgencia.trim(),
+      email: emailUrgencia.trim().toLowerCase(),
+      sintomas: descricao,
+      observacoes: cuidadosEspeciais,
+      ambulancia: ambulancia ? "Sim" : "Não",
+      cuidadosEspeciais,
+      unidade: "",
+    }
+
+    setPendingTriage(triagem)
+    setRegistrationError("")
+    setRegistering(true)
+    try {
+      await onRegister(triagem)
+      setStep("confirmed")
+    } catch (error) {
+      setRegistrationError(error instanceof Error ? error.message : "Não foi possível registrar a triagem.")
+    } finally {
+      setRegistering(false)
+    }
+  }
 
   const handleRegistrar = () => {
     setStep("chat")
@@ -45,6 +88,7 @@ export function UrgenciaScreen({ onNavigate }: UrgenciaScreenProps) {
     setMessages((prev) => [...prev, { sender: "user", text: messageText }])
     setCurrentMessage("")
     setReplyPending(true)
+    if (chatStage === "description") setDescricao(messageText)
 
     setTimeout(() => {
       if (chatStage === "description") {
@@ -57,10 +101,10 @@ export function UrgenciaScreen({ onNavigate }: UrgenciaScreenProps) {
         setSpecialCare(messageText)
         setMessages((prev) => [...prev, {
           sender: "bot",
-          text: "Anotei a informação no resumo deste aplicativo.",
+          text: "Registrando a triagem com essa informação.",
         }])
         setChatStage("complete")
-        setStep("confirmed")
+        void registrarTriagem(needsAmbulance, messageText)
       }
       setReplyPending(false)
     }, 700)
@@ -70,7 +114,7 @@ export function UrgenciaScreen({ onNavigate }: UrgenciaScreenProps) {
     setNeedsAmbulance(true)
     setMessages((prev) => [...prev, { sender: "user", text: "Preciso de ambulância." }])
     setChatStage("complete")
-    setStep("confirmed")
+    void registrarTriagem(true, specialCare)
   }
 
   const chooseSpecialCare = () => {
@@ -84,7 +128,7 @@ export function UrgenciaScreen({ onNavigate }: UrgenciaScreenProps) {
   const chooseNoAdditionalCare = () => {
     setMessages((prev) => [...prev, { sender: "user", text: "Não preciso de ambulância ou cuidados especiais." }])
     setChatStage("complete")
-    setStep("confirmed")
+    void registrarTriagem(false, specialCare)
   }
 
   // Confirmed state
@@ -96,9 +140,9 @@ export function UrgenciaScreen({ onNavigate }: UrgenciaScreenProps) {
             <AlertTriangle className="w-12 h-12 text-destructive" />
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-2">Urgencia Registrada</h1>
-            <p className="text-muted-foreground text-sm mb-4">
-              Seu relato foi registrado neste aplicativo. Nenhuma equipe foi notificada automaticamente.
-            </p>
+          <p className="text-muted-foreground text-sm mb-4">
+            Triagem registrada na planilha. Nenhuma equipe foi notificada automaticamente.
+          </p>
           <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-4 mb-6 text-left">
             {needsAmbulance ? (
               <p className="text-sm font-semibold text-destructive mb-2">
@@ -120,8 +164,12 @@ export function UrgenciaScreen({ onNavigate }: UrgenciaScreenProps) {
               setChatStage("description")
               setNeedsAmbulance(false)
               setSpecialCare("")
-              setNomeUrgencia("")
-              setTelefoneUrgencia("")
+              setDescricao("")
+              setPendingTriage(null)
+              setRegistrationError("")
+              setNomeUrgencia(nome)
+              setEmailUrgencia(email)
+              setTelefoneUrgencia(telefone)
               onNavigate("home")
             }}
             className="w-full bg-primary text-primary-foreground font-bold py-4 rounded-xl transition-all hover:bg-primary/90 active:scale-[0.98] text-base"
@@ -190,6 +238,31 @@ export function UrgenciaScreen({ onNavigate }: UrgenciaScreenProps) {
               </button>
             </div>
           )}
+          {registering && (
+            <p role="status" className="ml-10 text-sm text-muted-foreground">Registrando triagem...</p>
+          )}
+          {registrationError && (
+            <div role="alert" className="ml-10 rounded-xl border border-destructive/20 bg-card p-3 text-sm text-destructive">
+              <p>{registrationError}</p>
+              {pendingTriage && (
+                <button
+                  type="button"
+                  disabled={registering}
+                  onClick={() => {
+                    setRegistrationError("")
+                    setRegistering(true)
+                    void onRegister(pendingTriage)
+                      .then(() => setStep("confirmed"))
+                      .catch((error: unknown) => setRegistrationError(error instanceof Error ? error.message : "Não foi possível registrar a triagem."))
+                      .finally(() => setRegistering(false))
+                  }}
+                  className="mt-2 font-semibold underline disabled:opacity-50"
+                >
+                  Tentar novamente
+                </button>
+              )}
+            </div>
+          )}
         </div>
         <div className="px-5 pb-5 pt-2 border-t border-border bg-background">
           <div className="flex items-center gap-2">
@@ -198,14 +271,14 @@ export function UrgenciaScreen({ onNavigate }: UrgenciaScreenProps) {
               value={currentMessage}
               onChange={(e) => setCurrentMessage(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-              disabled={replyPending || chatStage === "assistance"}
+              disabled={replyPending || registering || chatStage === "assistance" || chatStage === "complete"}
               placeholder={chatStage === "special-care" ? "Quais cuidados especiais?" : "Descreva a emergência..."}
               className="flex-1 px-4 py-3.5 bg-input border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-base"
               aria-label="Mensagem sobre a emergencia"
             />
             <button
               onClick={handleSendMessage}
-              disabled={!currentMessage.trim() || replyPending || chatStage === "assistance"}
+              disabled={!currentMessage.trim() || replyPending || registering || chatStage === "assistance" || chatStage === "complete"}
               className="w-12 h-12 bg-destructive text-destructive-foreground rounded-xl flex items-center justify-center transition-all hover:bg-destructive/90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
               aria-label="Enviar mensagem"
             >
@@ -250,6 +323,19 @@ export function UrgenciaScreen({ onNavigate }: UrgenciaScreenProps) {
               />
             </div>
             <div>
+              <label htmlFor="urgencia-email" className="block text-sm font-medium text-foreground mb-1.5">
+                E-mail
+              </label>
+              <input
+                id="urgencia-email"
+                type="email"
+                placeholder="voce@exemplo.com"
+                value={emailUrgencia}
+                onChange={(e) => setEmailUrgencia(e.target.value)}
+                className="w-full px-4 py-3.5 bg-input border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-base"
+              />
+            </div>
+            <div>
               <label htmlFor="urgencia-tel" className="block text-sm font-medium text-foreground mb-1.5">
                 Telefone de contato
               </label>
@@ -266,7 +352,7 @@ export function UrgenciaScreen({ onNavigate }: UrgenciaScreenProps) {
         </div>
         <button
           onClick={handleRegistrar}
-          disabled={!nomeUrgencia.trim() || !telefoneUrgencia.trim()}
+          disabled={!nomeUrgencia.trim() || !emailUrgencia.trim() || !telefoneUrgencia.trim()}
           className="w-full bg-destructive text-destructive-foreground font-bold py-4 rounded-xl mt-5 transition-all hover:bg-destructive/90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-base"
         >
           Registrar
