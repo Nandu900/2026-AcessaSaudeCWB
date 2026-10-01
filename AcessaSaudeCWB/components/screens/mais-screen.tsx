@@ -9,15 +9,13 @@ import {
   Github,
   PlayCircle,
   ExternalLink,
-  LogOut,
 } from "lucide-react"
 
 interface MaisScreenProps {
   onNavigate: (screen: string) => void
-  onSignOut: () => void
 }
 
-export function MaisScreen({ onNavigate, onSignOut }: MaisScreenProps) {
+export function MaisScreen({ onNavigate }: MaisScreenProps) {
   // Menu
   return (
     <div className="h-full flex flex-col pb-20 bg-[linear-gradient(145deg,#1684b6_0%,#0aa9b2_52%,#08a779_100%)]">
@@ -59,14 +57,6 @@ export function MaisScreen({ onNavigate, onSignOut }: MaisScreenProps) {
             href="https://www.youtube.com/watch?v=SEU_VIDEO_ID"
           />
         </div>
-        <button
-          type="button"
-          onClick={onSignOut}
-          className="mt-5 flex w-full items-center gap-3 rounded-xl border border-white/70 bg-white px-4 py-3 text-left text-sm font-semibold text-destructive shadow-sm transition-colors hover:bg-white/90"
-        >
-          <LogOut className="h-5 w-5" />
-          Sair da conta
-        </button>
       </main>
     </div>
   )
