@@ -5,17 +5,18 @@ import { PageHeader } from "@/components/page-header"
 import { Clock, MapPin, Phone } from "lucide-react"
 
 interface Unidade {
-  id?: string
+  id?: string | number
   nome: string
   tipo?: string
   endereco?: string
   bairro?: string
   telefone?: string
   horario?: string
+  quantidadeAtendimentos?: number
 }
 
 interface UnidadesScreenProps {
-  onSelect: (unidade: string) => Promise<void>
+  onSelect: (unidade: Unidade) => Promise<void>
   onNavigate: (screen: string) => void
 }
 
@@ -47,11 +48,11 @@ export function UnidadesScreen({ onSelect, onNavigate }: UnidadesScreenProps) {
     }
   }, [])
 
-  const selecionarUnidade = async (nome: string) => {
-    setSelecting(nome)
+  const selecionarUnidade = async (unidade: Unidade) => {
+    setSelecting(unidade.nome)
     setSelectionError("")
     try {
-      await onSelect(nome)
+      await onSelect(unidade)
     } catch (selectionFailure: unknown) {
       setSelectionError(selectionFailure instanceof Error ? selectionFailure.message : "Não foi possível registrar o atendimento.")
     } finally {
@@ -77,7 +78,7 @@ export function UnidadesScreen({ onSelect, onNavigate }: UnidadesScreenProps) {
             {unidades.map((unidade) => (
               <button
                 key={unidade.id || unidade.nome}
-                onClick={() => void selecionarUnidade(unidade.nome)}
+                onClick={() => void selecionarUnidade(unidade)}
                 disabled={Boolean(selecting)}
                 className="w-full rounded-2xl border border-border bg-card p-5 text-left shadow-sm transition-all hover:shadow-md active:scale-[0.98] disabled:cursor-wait disabled:opacity-60"
               >
@@ -94,6 +95,11 @@ export function UnidadesScreen({ onSelect, onNavigate }: UnidadesScreenProps) {
                   )}
                   {unidade.telefone && <div className="flex items-center gap-2"><Phone className="h-4 w-4 shrink-0" /><span>{unidade.telefone}</span></div>}
                   {unidade.horario && <div className="flex items-center gap-2"><Clock className="h-4 w-4 shrink-0" /><span>{unidade.horario}</span></div>}
+                </div>
+                <div className="mt-4 flex justify-end">
+                  <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                    {unidade.quantidadeAtendimentos ?? 0} {(unidade.quantidadeAtendimentos ?? 0) === 1 ? "atendimento" : "atendimentos"}
+                  </span>
                 </div>
                 {selecting === unidade.nome && <span className="mt-3 block text-xs font-semibold text-primary">Registrando atendimento...</span>}
               </button>

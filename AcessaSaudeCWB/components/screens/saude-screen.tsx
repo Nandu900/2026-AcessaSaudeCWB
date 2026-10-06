@@ -142,7 +142,7 @@ export function SaudeScreen({ onNavigate }: SaudeScreenProps) {
   // List view
   return (
     <div className="h-full flex flex-col pb-20 bg-[linear-gradient(145deg,#1684b6_0%,#0aa9b2_52%,#08a779_100%)]">
-      <PageHeader title="Saude" onBack={() => onNavigate("home")} />
+      <PageHeader title="Saúde" onBack={() => onNavigate("home")} />
       <main className="flex-1 overflow-y-auto bg-transparent p-5">
         <div className="mb-4 flex items-center gap-3">
           <span aria-hidden="true" className="flex-1 border-t border-dashed border-white/80" />

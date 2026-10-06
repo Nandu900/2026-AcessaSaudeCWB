@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { PageHeader } from "@/components/page-header"
 
 const quickSymptoms = [
@@ -14,28 +13,22 @@ const quickSymptoms = [
 ]
 
 interface SintomasScreenProps {
-  sintomas: string
-  onUpdate: (sintomas: string) => void
+  sintomas: string[]
+  observacoes: string
+  onUpdate: (sintomas: string[], observacoes: string) => void
   onNavigate: (screen: string) => void
   teleatendimento: boolean
 }
 
-export function SintomasScreen({ sintomas, onUpdate, onNavigate, teleatendimento }: SintomasScreenProps) {
-  const selectedChips = sintomas.split("\n").filter((line) => quickSymptoms.includes(line))
+export function SintomasScreen({ sintomas, observacoes, onUpdate, onNavigate, teleatendimento }: SintomasScreenProps) {
+  const selectedChips = sintomas
 
   const toggleChip = (label: string) => {
     const next = selectedChips.includes(label)
       ? selectedChips.filter((s) => s !== label)
       : [...selectedChips, label]
 
-    const chipText = next.join("\n")
-    const freeText = sintomas
-      .split("\n")
-      .filter((line) => !quickSymptoms.includes(line))
-      .join("\n")
-      .trim()
-    const combined = [chipText, freeText].filter(Boolean).join("\n")
-    onUpdate(combined)
+    onUpdate(next, observacoes)
   }
 
   return (
@@ -81,8 +74,8 @@ export function SintomasScreen({ sintomas, onUpdate, onNavigate, teleatendimento
             id="sintomas-text"
             rows={4}
             placeholder="Descreva como se sente, quando começou, intensidade..."
-            value={sintomas}
-            onChange={(e) => onUpdate(e.target.value)}
+            value={observacoes}
+            onChange={(e) => onUpdate(sintomas, e.target.value)}
             className="w-full px-4 py-3.5 bg-input border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all resize-none text-base"
           />
         </div>

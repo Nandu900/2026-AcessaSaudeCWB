@@ -47,7 +47,7 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
           Bem-vindo(a) ao seu atendimento digital
         </h2>
         <p className="text-emerald-800 text-sm leading-relaxed">
-          Menos burocracia, mais agilidade e atendimento prioritario.
+          Menos burocracia, mais agilidade e atendimento prioritário.
         </p>
       </div>
 

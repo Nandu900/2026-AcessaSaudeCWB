@@ -10,7 +10,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { icon: Home, label: "Inicio", screen: "home" },
-  { icon: Activity, label: "Saude", screen: "saude" },
+  { icon: Activity, label: "Saúde", screen: "saude" },
   { icon: User, label: "Perfil", screen: "perfil" },
   { icon: Settings, label: "Mais", screen: "mais" },
 ]

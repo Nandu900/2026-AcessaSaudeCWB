@@ -89,7 +89,7 @@ export function AcompanharScreen({ email, onNavigate }: AcompanharScreenProps) {
           id: row.id || crypto.randomUUID(),
           especialidade: row.especialidade || "Atendimento",
           unidade: row.unidade || "Unidade a definir",
-          data: row.dataconsulta || "Data a definir",
+          data: row.dataconsulta || "Aguardando confirmação",
           horario: row.horario || "",
           posicaoFila: 0,
           tempoEstimado: "",
@@ -181,7 +181,15 @@ export function AcompanharScreen({ email, onNavigate }: AcompanharScreenProps) {
             >
               Confirmar Presenca (demonstração)
             </button>
-          ) : null}
+          ) : (
+            <button
+              type="button"
+              disabled
+              className="w-full rounded-xl bg-success py-4 text-base font-bold text-success-foreground opacity-70 cursor-not-allowed"
+            >
+              O botão de confirmação será liberado ao chegar no local
+            </button>
+          )}
         </main>
       </div>
     )

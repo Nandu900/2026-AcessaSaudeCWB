@@ -24,6 +24,7 @@ interface DadosPaciente {
   bairro: string
   especialidade: string
   sintomas: string[]
+  observacoes: string
   urgencia: string
   unidade: string
 }
@@ -36,6 +37,7 @@ const initialDados: DadosPaciente = {
   bairro: "",
   especialidade: "",
   sintomas: [],
+  observacoes: "",
   urgencia: "",
   unidade: "",
 }
@@ -126,11 +128,9 @@ export default function App() {
       case "sintomas":
         return (
           <SintomasScreen
-            sintomas={dados.sintomas.join("\n")}
-            onUpdate={(sintomasText) => {
-              const sintomasArray = sintomasText.split("\n").filter(Boolean)
-              updateDados({ sintomas: sintomasArray })
-            }}
+            sintomas={dados.sintomas}
+            observacoes={dados.observacoes}
+            onUpdate={(sintomas, observacoes) => updateDados({ sintomas, observacoes })}
             onNavigate={navigate}
             teleatendimento={dados.especialidade === "Teleatendimento"}
           />
@@ -146,8 +146,11 @@ export default function App() {
               email: dados.email,
               especialidade: dados.especialidade,
               unidade: "Teleatendimento",
+              unidadeId: "",
               dataConsulta: data,
               horario,
+              sintomas: dados.sintomas.join(", "),
+              observacoes: dados.observacoes,
               status: "Solicitado",
             })}
             onNavigate={navigate}
@@ -172,12 +175,15 @@ export default function App() {
                 nome: dados.nome,
                 email: dados.email,
                 especialidade: dados.especialidade,
-                unidade,
+                unidade: unidade.nome,
+                unidadeId: String(unidade.id ?? ""),
                 dataConsulta: "",
                 horario: "",
+                sintomas: dados.sintomas.join(", "),
+                observacoes: dados.observacoes,
                 status: "Solicitado",
               })
-              updateDados({ unidade })
+              updateDados({ unidade: unidade.nome })
               navigate("confirmacao")
             }}
             onNavigate={navigate}

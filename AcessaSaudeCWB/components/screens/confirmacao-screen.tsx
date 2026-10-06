@@ -23,25 +23,26 @@ export function ConfirmacaoScreen({ nome, especialidade, unidade, onNavigate }: 
           </p>
           <div className="flex items-start gap-3 rounded-xl border border-success/20 bg-success/5 p-4 mb-5 text-left">
             <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
-            <p className="text-foreground text-sm leading-relaxed">
-              Ao chegar, confirme sua presença no app. A equipe de saúde validará suas informações antes da consulta.
-            </p>
+            <div className="text-foreground text-sm leading-relaxed">
+              <p>Ao chegar, confirme sua presença no aplicativo.</p>
+              <p className="mt-2">A equipe de saúde validará suas informações antes da consulta.</p>
+            </div>
           </div>
           <div className="bg-secondary rounded-xl p-4 mb-5 text-left text-sm border border-border">
             <div className="flex flex-col gap-2">
-              <div className="flex justify-between">
+              <div className="flex justify-between gap-3">
                 <span className="text-muted-foreground font-medium">Paciente</span>
-                <span className="text-foreground font-semibold">{nome || "---"}</span>
+                <span className="text-right font-semibold text-foreground">{nome || "---"}</span>
               </div>
               <div className="h-px bg-border" />
-              <div className="flex justify-between">
+              <div className="flex justify-between gap-3">
                 <span className="text-muted-foreground font-medium">Especialidade</span>
-                <span className="text-foreground font-semibold">{especialidade || "---"}</span>
+                <span className="text-right font-semibold text-foreground">{especialidade || "---"}</span>
               </div>
               <div className="h-px bg-border" />
-              <div className="flex justify-between">
-                <span className="text-muted-foreground font-medium">Unidade</span>
-                <span className="text-foreground font-semibold">{unidade || "---"}</span>
+              <div className="flex justify-between gap-3">
+                <span className="text-muted-foreground font-medium">Local</span>
+                <span className="text-right font-semibold text-foreground">{unidade || "---"}</span>
               </div>
             </div>
           </div>

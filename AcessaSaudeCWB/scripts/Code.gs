@@ -1,6 +1,6 @@
 const SHEET_HEADERS = {
   Unidades: ["ID", "Nome", "Tipo", "Endereço", "Bairro", "Telefone", "Horario"],
-  Agendamentos: ["ID", "Data Criação", "Nome", "Email", "Especialidade", "Unidade", "Data Consulta", "Horário", "status"],
+  Agendamentos: ["ID", "Data Criação", "Nome", "Email", "Especialidade", "Unidade", "UnidadeID", "Data Consulta", "Horário", "Sintomas", "Observações", "status"],
   Triagens: ["ID", "Data Criação", "Nome", "Email", "Sintomas", "Observações", "Ambulancia", "Cuidados especiais", "Unidade"],
   Acessos: ["ID", "Data/Hora", "Nome", "Email", "UsuarioID", "Evento"],
 }
@@ -20,7 +20,16 @@ function doGet(event) {
     let data
 
     if (action === "unidades") {
-      data = readRecords("Unidades").filter((row) => row.nome)
+      const counts = getAppointmentCountsByUnit()
+      data = readRecords("Unidades")
+        .filter((row) => row.nome)
+        .map((unit) => ({
+          ...unit,
+          quantidadeAtendimentos:
+            counts["id:" + normalizeHeader(unit.id)] ||
+            counts["name:" + normalizeHeader(unit.nome)] ||
+            0,
+        }))
     } else if (action === "agendamentos" || action === "triagens") {
       const email = normalizeEmail(event.parameter.email)
       if (!email) throw new Error("Informe o e-mail para consultar os registros.")
@@ -59,8 +68,11 @@ function doPost(event) {
         email: normalizeEmail(body.email),
         especialidade: body.especialidade,
         unidade: body.unidade,
+        unidadeid: body.unidadeId || "",
         dataconsulta: body.dataconsulta || "",
         horario: body.horario || "",
+        sintomas: body.sintomas || "",
+        observacoes: body.observacoes || "",
         status: body.status || "Solicitado",
       })
     } else if (action === "triage") {
@@ -124,6 +136,17 @@ function readRecords(name) {
       record[header] = valueForJson(row[index])
       return record
     }, {}))
+}
+
+function getAppointmentCountsByUnit() {
+  const counts = {}
+  readRecords("Agendamentos").forEach((appointment) => {
+    const unitId = normalizeHeader(appointment.unidadeid)
+    const unitName = normalizeHeader(appointment.unidade)
+    if (unitId) counts["id:" + unitId] = (counts["id:" + unitId] || 0) + 1
+    if (unitName) counts["name:" + unitName] = (counts["name:" + unitName] || 0) + 1
+  })
+  return counts
 }
 
 function appendRecord(name, record) {

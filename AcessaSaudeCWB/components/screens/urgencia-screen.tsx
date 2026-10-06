@@ -139,7 +139,7 @@ export function UrgenciaScreen({ nome, email, telefone, onRegister, onNavigate }
           <div className="w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-6">
             <AlertTriangle className="w-12 h-12 text-destructive" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">Urgencia Registrada</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Urgência Registrada</h1>
           <p className="text-muted-foreground text-sm mb-4">
             Triagem registrada na planilha. Nenhuma equipe foi notificada automaticamente.
           </p>
@@ -185,7 +185,7 @@ export function UrgenciaScreen({ nome, email, telefone, onRegister, onNavigate }
   if (step === "chat") {
     return (
       <div className="bg-background h-full flex flex-col pb-20">
-        <PageHeader title="Assistente de Urgencia" onBack={() => setStep("form")} variant="destructive" />
+        <PageHeader title="Assistente de Urgência" onBack={() => setStep("form")} variant="destructive" />
         <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-3">
           {messages.map((msg, i) => (
             <div
@@ -293,12 +293,12 @@ export function UrgenciaScreen({ nome, email, telefone, onRegister, onNavigate }
   // Form step
   return (
     <div className="bg-background h-full flex flex-col pb-20">
-      <PageHeader title="Urgencia" onBack={() => onNavigate("home")} variant="destructive" />
+      <PageHeader title="Urgência" onBack={() => onNavigate("home")} variant="destructive" />
       <main className="flex-1 overflow-y-auto p-5">
         <div className="bg-destructive/5 border border-destructive/20 rounded-2xl p-5 mb-5">
           <div className="flex items-center gap-3 mb-2">
             <AlertTriangle className="w-5 h-5 text-destructive shrink-0" />
-            <h3 className="font-bold text-destructive text-base">Atendimento de Urgencia</h3>
+            <h3 className="font-bold text-destructive text-base">Atendimento de Urgência</h3>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed">
             Preencha os dados abaixo para registro imediato. Apos clicar em Registrar, voce sera direcionado ao assistente virtual.
