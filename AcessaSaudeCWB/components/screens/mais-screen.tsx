@@ -9,6 +9,7 @@ import {
   Github,
   PlayCircle,
   ExternalLink,
+  Tablet,
 } from "lucide-react"
 
 interface MaisScreenProps {
@@ -37,7 +38,7 @@ export function MaisScreen({ onNavigate }: MaisScreenProps) {
           <MenuItem
             icon={UserCheck}
             label="Visualização da Equipe de Saúde"
-            onClick={() => {}}
+            onClick={() => onNavigate("equipe")}
           />
         </div>
 
@@ -54,7 +55,13 @@ export function MaisScreen({ onNavigate }: MaisScreenProps) {
           <MenuLink
             icon={PlayCircle}
             label="Vídeo Demonstrativo (YouTube)"
-            href="https://www.youtube.com/watch?v=SEU_VIDEO_ID"
+            href="https://www.youtube.com/watch?v=bDe55KkPuUA&t=2s"
+          />
+          <div className="h-px bg-border mx-4" />
+          <MenuItem
+            icon={Tablet}
+            label="Visualização Totem"
+            onClick={() => onNavigate("totem")}
           />
         </div>
       </main>

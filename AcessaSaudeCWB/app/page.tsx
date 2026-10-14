@@ -14,6 +14,8 @@ import { AcompanharScreen } from "@/components/screens/acompanhar-screen"
 import { SaudeScreen } from "@/components/screens/saude-screen"
 import { MaisScreen } from "@/components/screens/mais-screen"
 import { PerfilScreen } from "@/components/screens/perfil-screen"
+import { EquipeScreen } from "@/components/screens/equipe-screen"
+import { TotemScreen } from "@/components/screens/totem-screen"
 
 // Interface atualizada conforme os campos do seu formulário
 interface DadosPaciente {
@@ -213,6 +215,10 @@ export default function App() {
         return <SaudeScreen onNavigate={navigate} />
       case "mais":
         return <MaisScreen onNavigate={navigate} />
+      case "equipe":
+        return <EquipeScreen onNavigate={navigate} />
+      case "totem":
+        return <TotemScreen onNavigate={navigate} />
       case "perfil":
         return (
           <PerfilScreen
